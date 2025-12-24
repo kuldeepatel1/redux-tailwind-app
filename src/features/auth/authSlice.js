@@ -1,6 +1,6 @@
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { loginApi, registerApi, verifyOtpApi, resendOtpApi } from "./authService";
+import { loginApi, registerApi, verifyOtpApi, resendOtpApi, getCurrentUser } from "./authService";
 
 // LOGIN
 export const loginUser = createAsyncThunk(
@@ -54,6 +54,27 @@ export const resendOtp = createAsyncThunk(
   }
 );
 
+// INITIALIZE AUTH
+export const initializeAuth = createAsyncThunk(
+  "auth/initializeAuth",
+  async (_, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return thunkAPI.rejectWithValue("No token found");
+      }
+      
+      const data = await getCurrentUser();
+      return data; // { user: {...} }
+    } catch (err) {
+      // Token is invalid or expired, clear it
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      return thunkAPI.rejectWithValue("Token validation failed");
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -63,6 +84,7 @@ const authSlice = createSlice({
     otpVerified: false,
     registerMessage: null, // store backend message after registration
     token: localStorage.getItem("token") || null,
+    initializing: true, // Track if auth is being initialized
   },
   reducers: {
     logout: (state) => {
@@ -71,6 +93,7 @@ const authSlice = createSlice({
       state.registerMessage = null;
       state.token = null;
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
     setUser: (state, action) => {
       state.user = action.payload;
@@ -88,6 +111,7 @@ const authSlice = createSlice({
         state.user = action.payload.user; // backend sends {user, token}
         state.token = action.payload.token;
         localStorage.setItem("token", action.payload.token);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -95,6 +119,7 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
       })
 
       // REGISTER
@@ -137,6 +162,28 @@ const authSlice = createSlice({
       .addCase(resendOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // INITIALIZE AUTH
+      .addCase(initializeAuth.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.initializing = true;
+      })
+      .addCase(initializeAuth.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.initializing = false;
+        // Token remains in state from initialState
+      })
+      .addCase(initializeAuth.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.user = null;
+        state.token = null;
+        state.initializing = false;
+        // localStorage token and user are already removed in the thunk
+        localStorage.removeItem("user");
       });
   },
 });

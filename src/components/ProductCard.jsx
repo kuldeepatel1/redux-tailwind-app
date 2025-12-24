@@ -1,10 +1,19 @@
-import { useDispatch, useSelector } from "react-redux";
-import { addToCart } from "../features/cart/cartSlice";
+import { useContext } from "react";
+import { CartContext } from "../context/CartContext";
+import { useSelector } from "react-redux";
 
 export default function ProductCard({ product, onClick }) {
-  const dispatch = useDispatch();
+  const { addToCart, removeFromCart, isInCart, getCartItem } = useContext(CartContext);
   const { user } = useSelector((state) => state.auth);
-  const { actionLoading } = useSelector((state) => state.cart);
+
+  // Prepare product data for cart
+  const productId = product.id || product._id;
+  const productData = {
+    id: productId,
+    name: product.name || product.title,
+    price: product.price,
+    image: product.image,
+  };
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
@@ -15,20 +24,19 @@ export default function ProductCard({ product, onClick }) {
       return;
     }
 
-    // 🛑 Product validation (THIS FIXES 400 ERROR)
-    if (!product || !product._id) {
+    // 🛑 Product validation
+    if (!product || !productId) {
       console.error("Invalid product data:", product);
       alert("Unable to add product. Please refresh.");
       return;
     }
 
-    dispatch(
-      addToCart({
-        productId: product._id,
-        quantity: 1,
-      })
-    );
+    addToCart(productData);
   };
+
+  // Check if product is already in cart
+  const inCart = isInCart(productId);
+  const cartItem = getCartItem(productId);
 
   // 🖼️ Safe image handling
   const imageSrc =
@@ -45,27 +53,61 @@ export default function ProductCard({ product, onClick }) {
     >
       <img
         src={imageSrc}
-        alt={product?.name || "Product"}
+        alt={product?.name || product?.title || "Product"}
         className="h-48 w-full object-cover rounded-t-xl"
         onError={(e) => (e.target.src = "/placeholder.png")}
       />
 
       <div className="p-4">
         <h3 className="font-bold truncate">
-          {product?.name || "Unnamed Product"}
+          {product?.name || product?.title || "Unnamed Product"}
         </h3>
 
         <p className="text-orange-600 font-semibold">
           ₹{product?.price ?? "N/A"}
         </p>
 
-        <button
-          onClick={handleAddToCart}
-          disabled={actionLoading}
-          className="mt-3 w-full bg-orange-500 text-white py-2 rounded disabled:opacity-60"
-        >
-          {actionLoading ? "Adding..." : "Add to Cart"}
-        </button>
+        {inCart ? (
+          <div className="mt-3">
+            <p className="text-green-600 text-sm mb-2">
+              In Cart: {cartItem?.quantity || 0}
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  // Decrease quantity
+                  if (cartItem.quantity > 1) {
+                    // We'll need to add a decreaseQuantity function to context
+                    // For now, remove completely
+                    removeFromCart(productId);
+                  } else {
+                    removeFromCart(productId);
+                  }
+                }}
+                className="flex-1 bg-red-500 text-white py-2 rounded text-sm"
+              >
+                Remove
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addToCart(productData);
+                }}
+                className="flex-1 bg-orange-500 text-white py-2 rounded text-sm"
+              >
+                Add More
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={handleAddToCart}
+            className="mt-3 w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 transition-colors"
+          >
+            Add to Cart
+          </button>
+        )}
       </div>
     </div>
   );

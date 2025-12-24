@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../features/auth/authSlice";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +7,14 @@ import AuthLayout from "../components/AuthLayout";
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((s) => s.auth);
+  const { loading, error, user, initializing } = useSelector((s) => s.auth);
+
+  // Redirect already authenticated users to products page
+  useEffect(() => {
+    if (!initializing && user) {
+      navigate("/products");
+    }
+  }, [user, initializing, navigate]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
