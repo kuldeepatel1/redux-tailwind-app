@@ -1,11 +1,18 @@
+import { useDispatch } from "react-redux";
+import { logout } from "../../features/auth/authSlice"
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { user } = useSelector(s => s.auth);
 
+ const handleLogout = () => {
+    dispatch(logout());
+    navigate("/login");
+  };
   if (!user) {
     return (
       <div className="max-w-md mx-auto p-6">
@@ -51,20 +58,41 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
-        <div className="flex items-center space-x-6">
-          <div className="h-24 w-24 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold">
-            {user.name ? user.name.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase()}
-          </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-gray-900">{user.name || "User"}</h2>
-            <p className="text-gray-600">{user.email}</p>
-            {user._id && (
-              <p className="text-sm text-gray-500 mt-1">User ID: {user._id}</p>
-            )}
-          </div>
-        </div>
+     <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
+  <div className="flex items-center justify-between">
+    
+    {/* LEFT: Avatar + User Info */}
+    <div className="flex items-center space-x-6">
+      <div className="h-24 w-24 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold">
+        {user.name
+          ? user.name.charAt(0).toUpperCase()
+          : user.email?.charAt(0).toUpperCase()}
       </div>
+
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">
+          {user.name || "User"}
+        </h2>
+        <p className="text-gray-600">{user.email}</p>
+        {user._id && (
+          <p className="text-sm text-gray-500 mt-1">
+            User ID: {user._id}
+          </p>
+        )}
+      </div>
+    </div>
+
+    {/* RIGHT: Logout Button */}
+    <button
+      onClick={handleLogout}
+      className="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-200"
+    >
+      Logout
+    </button>
+
+  </div>
+</div>
+
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
