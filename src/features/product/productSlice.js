@@ -16,7 +16,7 @@ export const fetchProducts = createAsyncThunk(
   "products/fetchAll",
   async (page = 1, thunkAPI) => {
     try {
-      const result = await getProductsApi(page);
+      const result = await getProductsApi(page, 8); // Pass limit of 8 products
       return {
         products: result.products,
         pagination: result.pagination,

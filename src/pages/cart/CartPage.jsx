@@ -88,12 +88,7 @@ export default function CartPage() {
                     </div>
 
                     {cartItems.map((item) => {
-                        const imageSrc =
-                            typeof item.image === "string"
-                                ? item.image.startsWith("http")
-                                    ? item.image
-                                    : `data:image/jpeg;base64,${item.image}`
-                                : "/placeholder.png";
+                        const imageSrc = item.image || "https://via.placeholder.com/500x400?text=No+Image";
 
                         return (
                             <div
@@ -105,7 +100,7 @@ export default function CartPage() {
                                         src={imageSrc}
                                         alt={item.name}
                                         className="w-16 h-16 object-cover rounded"
-                                        onError={(e) => (e.target.src = "/placeholder.png")}
+                                        onError={(e) => (e.target.src = "https://via.placeholder.com/500x400?text=No+Image")}
                                     />
 
                                     <div>

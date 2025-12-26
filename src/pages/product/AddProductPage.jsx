@@ -117,7 +117,7 @@ export default function AddProductPage() {
         description: formData.description.trim(),
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
-        image: formData.image || "https://via.placeholder.com/300x200?text=Product+Image"
+        image: formData.image || "https://via.placeholder.com/500x400?text=No+Image"
       };
 
       const result = await dispatch(addProduct(productData));
@@ -303,7 +303,7 @@ export default function AddProductPage() {
                   alt="Product preview"
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/300x200?text=Invalid+Image+URL";
+                    e.target.src = "https://via.placeholder.com/500x400?text=No+Image";
                   }}
                 />
               </div>

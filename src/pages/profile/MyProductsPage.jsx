@@ -95,9 +95,12 @@ export default function MyProductsPage() {
           className="flex gap-6 bg-orange-50 p-4 rounded-xl shadow hover:shadow-md transition"
         >
           <img
-            src={p.image || "https://via.placeholder.com/150"}
+            src={p.image || "https://via.placeholder.com/500x400?text=No+Image"}
             alt={p.name}
             className="h-24 w-24 object-cover rounded-lg"
+            onError={(e) => {
+              e.target.src = "https://via.placeholder.com/500x400?text=No+Image";
+            }}
           />
           <div className="flex-1">
             <h3 className="font-bold text-lg">{p.name}</h3>

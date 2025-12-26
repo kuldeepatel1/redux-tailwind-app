@@ -147,15 +147,12 @@ export default function MyOrdersPage() {
         {resolvedProducts.slice(0, 2).map((p) => (
           <div key={p._id} className="flex items-center gap-3 mt-2">
             <img
-              src={
-                p.image?.startsWith("http")
-                  ? p.image
-                  : p.image
-                  ? `data:image/jpeg;base64,${p.image}`
-                  : "/placeholder.png"
-              }
+              src={p.image || "https://via.placeholder.com/500x400?text=No+Image"}
               alt={p.name}
               className="w-10 h-10 rounded object-cover"
+              onError={(e) => {
+                e.target.src = "https://via.placeholder.com/500x400?text=No+Image";
+              }}
             />
             <div className="text-sm">
               <p className="font-medium">{p.name}</p>
