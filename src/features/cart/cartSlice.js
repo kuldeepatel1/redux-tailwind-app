@@ -4,7 +4,6 @@ import {
   addToCartApi,
   updateCartApi,
   removeFromCartApi,
-  checkoutApi,
 } from "./cartService";
 
 // ---------------- FETCH CART ----------------
@@ -83,18 +82,7 @@ export const removeFromCart = createAsyncThunk(
   }
 );
 
-// ---------------- CHECKOUT ----------------
-export const checkout = createAsyncThunk(
-  "cart/checkout",
-  async (_, thunkAPI) => {
-    try {
-      await checkoutApi();
-      return [];
-    } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data || err.message);
-    }
-  }
-);
+
 
 const cartSlice = createSlice({
   name: "cart",
@@ -102,7 +90,6 @@ const cartSlice = createSlice({
     items: [],
     loading: false,
     actionLoading: false,
-    checkoutLoading: false,
     error: null,
   },
   reducers: {},
@@ -138,19 +125,6 @@ const cartSlice = createSlice({
       // REMOVE
       .addCase(removeFromCart.fulfilled, (s, a) => {
         s.items = a.payload;
-      })
-
-      // CHECKOUT ✅ FIXED
-      .addCase(checkout.pending, (s) => {
-        s.checkoutLoading = true;
-      })
-      .addCase(checkout.fulfilled, (s) => {
-        s.checkoutLoading = false;
-        s.items = [];
-      })
-      .addCase(checkout.rejected, (s, a) => {
-        s.checkoutLoading = false;
-        s.error = a.payload;
       });
   }
 

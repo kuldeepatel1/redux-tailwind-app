@@ -11,9 +11,11 @@ export const getOrdersApi = async () => {
 };
 
 // Create a new order (checkout)
-export const createOrderApi = async () => {
+export const createOrderApi = async (cartItems = []) => {
   try {
-    const response = await api.post("/orders");
+    // Backend reads cart from server-side, so we don't need to send cart data
+    // Just send an empty object to trigger order creation from stored cart
+    const response = await api.post("/orders", {});
     return response.data;
   } catch (error) {
     throw error;

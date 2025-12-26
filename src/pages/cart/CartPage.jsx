@@ -1,9 +1,15 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { CartContext } from "../../context/CartContext";
+import { createOrder } from "../../features/order/orderSlice";
+import { addToCartApi } from "../../features/cart/cartService";
 
 export default function CartPage() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { loading, error } = useSelector((state) => state.orders);
+    
     const {
         cartItems,
         removeFromCart,
@@ -16,6 +22,36 @@ export default function CartPage() {
     const subtotal = getTotalPrice();
     const shippingFee = subtotal > 0 ? 150 : 0;
     const totalAmount = subtotal + shippingFee;
+
+    const handleCheckout = async () => {
+        if (cartItems.length === 0) {
+            alert("Your cart is empty!");
+            return;
+        }
+
+        try {
+            // First sync cart items to backend
+            for (const item of cartItems) {
+                await addToCartApi({ productId: item.id, quantity: item.quantity });
+            }
+
+            // Then create the order (backend will read from its cart)
+            const result = await dispatch(createOrder()).unwrap();
+
+            // Clear the local cart after successful order
+            clearCart();
+
+            // Show success message
+            alert("Order placed successfully! Order ID: " + result._id);
+
+            // Navigate to products page
+            navigate("/products");
+
+        } catch (error) {
+            console.error("Checkout failed:", error);
+            alert("Checkout failed: " + (error.message || "Please try again"));
+        }
+    };
 
     return (
         <div className="max-w-7xl mx-auto p-6">
@@ -148,10 +184,15 @@ export default function CartPage() {
                     </div>
 
                     <button
-                        onClick={() => alert("Proceed to Checkout")}
-                        className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold"
+                        onClick={handleCheckout}
+                        disabled={loading || cartItems.length === 0}
+                        className={`w-full mt-6 py-3 rounded-lg font-semibold ${
+                            loading || cartItems.length === 0
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700"
+                        } text-white`}
                     >
-                        PROCEED TO CHECKOUT
+                        {loading ? "PROCESSING..." : "PROCEED TO CHECKOUT"}
                     </button>
                 </div>
             </div>

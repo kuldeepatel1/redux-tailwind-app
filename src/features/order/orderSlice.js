@@ -22,9 +22,9 @@ export const fetchOrders = createAsyncThunk(
 // ---------------- CREATE ORDER (CHECKOUT) ----------------
 export const createOrder = createAsyncThunk(
   "orders/createOrder",
-  async (_, thunkAPI) => {
+  async (cartItems, thunkAPI) => {
     try {
-      return await createOrderApi();
+      return await createOrderApi(cartItems);
     } catch (err) {
       return thunkAPI.rejectWithValue(
         err.response?.data || err.message

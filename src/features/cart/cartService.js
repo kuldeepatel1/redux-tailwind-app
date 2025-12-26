@@ -36,12 +36,3 @@ export const removeFromCartApi = async (productId) => {
   return res.data;
 };
 
-export const checkoutApi = async () => {
-  const res = await axios.post(
-    "https://app-backend-ruby.vercel.app/api/orders",
-    {},
-    authHeader()
-  );
-  return res.data;
-};
-
