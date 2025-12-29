@@ -9,33 +9,44 @@ export default function MyOrdersPage() {
   const navigate = useNavigate();
 
   const { orders = [], loading = false, error = null } =
-    useSelector((state) => state.orders || {});
-
-  const { products: allProducts = [] } =
-    useSelector((state) => state.products || {});
-
+  useSelector((state) => state.orders);
+  const { products: allProducts = [] } = useSelector(
+    (state) => state.products || {}
+  );
   const { user } = useSelector((state) => state.auth || {});
 
   // ---------------- PRODUCT MAP ----------------
   const productMap = {};
   allProducts.forEach((p) => {
-    productMap[p._id] = p;
+    // normalize product id in case it's an object with $oid
+    const pid = p._id?.$oid || p._id;
+    productMap[pid] = p;
   });
 
-  // ---------------- PURCHASE ORDERS ----------------
-  const purchaseOrders = user
-    ? orders.filter((order) => order.buyer === user._id)
-    : [];
+  // ---------------- NORMALIZE ORDERS ----------------
+// If backend returns products instead of orders
+const normalizedOrders = orders.map((product) => ({
+  _id: product._id,
+  buyer: user?._id,
+  products: [product._id],
+  totalPrice: product.price,
+  status: "pending",
+  createdAt: product.createdAt,
+}));
 
+
+  // ---------------- PURCHASE ORDERS ----------------
+const purchaseOrders = user ? normalizedOrders : [];
   // ---------------- SALES ORDERS ----------------
-  const salesOrders = user
-    ? orders.filter((order) =>
-        order.products?.some((productId) => {
-          const product = productMap[productId];
-          return product && product.owner === user._id;
-        })
-      )
-    : [];
+ const salesOrders = user
+  ? normalizedOrders.filter((order) =>
+      order.products.some((productId) => {
+        const product = productMap[productId];
+        return product?.seller?._id === user._id;
+      })
+    )
+  : [];
+
 
   useEffect(() => {
     dispatch(fetchOrders());
@@ -64,7 +75,6 @@ export default function MyOrdersPage() {
   if (!purchaseOrders.length && !salesOrders.length) {
     return (
       <div className="max-w-3xl mx-auto p-6">
-        {/* BACK ICON */}
         <div className="flex items-center mb-6">
           <button
             onClick={() => navigate(-1)}
@@ -84,10 +94,9 @@ export default function MyOrdersPage() {
               />
             </svg>
           </button>
-          <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
+          <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
         </div>
 
-        {/* EMPTY STATE */}
         <div className="text-center py-12">
           <svg
             className="mx-auto h-12 w-12 text-gray-400"
@@ -121,51 +130,61 @@ export default function MyOrdersPage() {
 
     return (
       <div
-        key={order._id}
-        className="bg-orange-50 p-4 rounded-xl shadow"
+        key={order._id?.$oid || order._id}
+        className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
       >
-        <div className="flex justify-between items-start mb-2">
-          <p className="font-bold">
-            Order #{order._id.slice(0, 8)}
+        <div className="flex justify-between items-start mb-4">
+          <p className="font-bold text-lg md:text-xl text-gray-800">
+            Order #{(order._id?.$oid || order._id).slice(0, 8)}
           </p>
 
-          <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              order.status === "completed"
+                ? "bg-green-100 text-green-800"
+                : "bg-yellow-100 text-yellow-800"
+            }`}
+          >
             {order.status || "pending"}
           </span>
         </div>
 
-        <div className="text-sm text-gray-600 mb-2">
+        <div className="text-gray-600 mb-4 space-y-1 text-sm md:text-base">
           <p>Products: {order.products?.length || 0}</p>
           {order.createdAt && (
-            <p>
-              Order Date:{" "}
-              {new Date(order.createdAt).toLocaleDateString()}
-            </p>
+            <p>Order Date: {new Date(order.createdAt).toLocaleDateString()}</p>
           )}
         </div>
 
-        {resolvedProducts.slice(0, 2).map((p) => (
-          <div key={p._id} className="flex items-center gap-3 mt-2">
-            <img
-              src={p.image || "https://via.placeholder.com/500x400?text=No+Image"}
-              alt={p.name}
-              className="w-10 h-10 rounded object-cover"
-              onError={(e) => {
-                e.target.src = "https://via.placeholder.com/500x400?text=No+Image";
-              }}
-            />
-            <div className="text-sm">
-              <p className="font-medium">{p.name}</p>
-              <p className="text-gray-500">₹{p.price}</p>
+        <div className="flex gap-4 overflow-x-auto py-2">
+          {resolvedProducts.map((p) => (
+            <div
+              key={p._id?.$oid || p._id}
+              className="flex-shrink-0 w-24 md:w-32 flex flex-col items-center bg-gray-50 rounded-lg p-2 shadow-sm"
+            >
+              <img
+                src={
+                  p.image ||
+                  "https://via.placeholder.com/500x400?text=No+Image"
+                }
+                alt={p.name}
+                className="w-20 h-20 md:w-28 md:h-28 rounded-lg object-cover mb-2"
+                onError={(e) => {
+                  e.target.src =
+                    "https://via.placeholder.com/500x400?text=No+Image";
+                }}
+              />
+              <p className="text-center text-sm font-medium">{p.name}</p>
+              <p className="text-gray-500 text-sm">₹{p.price}</p>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
 
-        <div className="flex justify-between items-center mt-3">
-          <p className="font-bold text-lg">
+        <div className="flex justify-between items-center mt-4">
+          <p className="font-bold text-lg md:text-xl text-gray-900">
             ₹ {order.totalPrice || 0}
           </p>
-          <button className="text-indigo-600 text-sm font-medium">
+          <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm md:text-base font-semibold rounded-lg transition">
             View Details
           </button>
         </div>
@@ -174,9 +193,8 @@ export default function MyOrdersPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      {/* HEADER WITH BACK ICON */}
-      <div className="flex items-center mb-4">
+    <div className="max-w-4xl mx-auto p-6 space-y-8">
+      <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(-1)}
           className="flex items-center text-gray-600 hover:text-indigo-600 transition mr-4"
@@ -195,24 +213,24 @@ export default function MyOrdersPage() {
             />
           </svg>
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
+        <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
       </div>
 
       {purchaseOrders.length > 0 && (
         <>
-          <h2 className="text-xl font-bold">My Purchases</h2>
-          <div className="space-y-4">
-            {purchaseOrders.map(renderOrderCard)}
-          </div>
+          <h2 className="text-2xl font-semibold border-b pb-2 mb-4">
+            My Purchases
+          </h2>
+          <div className="space-y-6">{purchaseOrders.map(renderOrderCard)}</div>
         </>
       )}
 
       {salesOrders.length > 0 && (
         <>
-          <h2 className="text-xl font-bold mt-6">My Sales</h2>
-          <div className="space-y-4">
-            {salesOrders.map(renderOrderCard)}
-          </div>
+          <h2 className="text-2xl font-semibold border-b pb-2 mt-10 mb-4">
+            My Sales
+          </h2>
+          <div className="space-y-6">{salesOrders.map(renderOrderCard)}</div>
         </>
       )}
     </div>

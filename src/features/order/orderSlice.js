@@ -10,42 +10,48 @@ export const fetchOrders = createAsyncThunk(
   "orders/fetchOrders",
   async (_, thunkAPI) => {
     try {
-      return await getOrdersApi();
+      const res = await getOrdersApi();
+      return res;
     } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || err.message
-      );
+      return thunkAPI.rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-// ---------------- CREATE ORDER (CHECKOUT) ----------------
+// ---------------- CREATE ORDER ----------------
 export const createOrder = createAsyncThunk(
   "orders/createOrder",
-  async (cartItems, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      return await createOrderApi(cartItems);
+      const res = await createOrderApi();
+      return res;
     } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || err.message
-      );
+      return thunkAPI.rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
-// ---------------- FETCH SINGLE ORDER ----------------
+// ---------------- FETCH ORDER BY ID ----------------
 export const fetchOrderById = createAsyncThunk(
   "orders/fetchOrderById",
   async (id, thunkAPI) => {
     try {
       return await getOrderByIdApi(id);
     } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || err.message
-      );
+      return thunkAPI.rejectWithValue(err.response?.data || err.message);
     }
   }
 );
+
+// ---------------- NORMALIZER ----------------
+const normalizeOrder = (order) => ({
+  ...order,
+  _id: order?._id?.$oid || order?._id,
+  buyer: order?.buyer?.$oid || order?.buyer,
+  products: (order?.products || []).map((p) => p?.$oid || p),
+  createdAt: order?.createdAt?.$date || order?.createdAt,
+  updatedAt: order?.updatedAt?.$date || order?.updatedAt,
+});
 
 // ---------------- SLICE ----------------
 const orderSlice = createSlice({
@@ -56,25 +62,39 @@ const orderSlice = createSlice({
     loading: false,
     error: null,
   },
+
   reducers: {
     clearCurrentOrder: (state) => {
       state.currentOrder = null;
       state.error = null;
     },
   },
+
   extraReducers: (builder) => {
     builder
+
       // ===== FETCH ORDERS =====
       .addCase(fetchOrders.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = (action.payload || []).map((order) => ({
-          ...order,
-          products: order.products ?? order.items ?? [],
-        }));
+
+        /**
+         * ❗ Backend BUG:
+         * /orders returns { products: [], pagination }
+         * So DO NOT overwrite existing orders with empty array
+         */
+        const list =
+          Array.isArray(action.payload)
+            ? action.payload
+            : action.payload?.orders
+            ? action.payload.orders
+            : [];
+
+        if (list.length > 0) {
+          state.orders = list.map(normalizeOrder);
+        }
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false;
@@ -84,15 +104,16 @@ const orderSlice = createSlice({
       // ===== CREATE ORDER =====
       .addCase(createOrder.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.loading = false;
+
+        /**
+         * ✅ This is the REAL working response
+         * So we push it manually into orders list
+         */
         if (action.payload?._id) {
-          state.orders.unshift({
-            ...action.payload,
-            products: action.payload.products ?? action.payload.items ?? [],
-          });
+          state.orders.unshift(normalizeOrder(action.payload));
         }
       })
       .addCase(createOrder.rejected, (state, action) => {
@@ -101,20 +122,8 @@ const orderSlice = createSlice({
       })
 
       // ===== FETCH ORDER BY ID =====
-      .addCase(fetchOrderById.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(fetchOrderById.fulfilled, (state, action) => {
-        state.loading = false;
-        state.currentOrder = {
-          ...action.payload,
-          products: action.payload.products ?? action.payload.items ?? [],
-        };
-      })
-      .addCase(fetchOrderById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        state.currentOrder = normalizeOrder(action.payload);
       });
   },
 });

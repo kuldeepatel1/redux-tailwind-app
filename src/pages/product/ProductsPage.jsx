@@ -80,92 +80,62 @@ export default function ProductsPage() {
 
   return (
     <>
-      <ProductPageHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <ProductPageHeader   searchTerm={searchTerm}
+  setSearchTerm={setSearchTerm}/>
+
+{/* HERO SECTION – FULL WIDTH */}
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+  <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 px-12 py-14">
+    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+      Next-Gen Electronics.
+    </h1>
+
+    <p className="text-blue-200 max-w-xl mb-8">
+      Discover our curated collection of premium gadgets and high-performance devices.
+    </p>
+
+    <div className="flex gap-4">
+      <button className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-full text-white font-medium transition">
+        Shop Collection
+      </button>
+      <button className="border border-white/40 hover:bg-white/10 px-6 py-3 rounded-full text-white font-medium transition">
+        Learn More
+      </button>
+    </div>
+  </div>
+</div>
+
+{/* MAIN CONTENT */}
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
 
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">All Products</h1>
-          <p className="text-gray-600">Browse products from other sellers</p>
-        </div>
+        {/* Products Header */}
+<div className="flex items-center justify-between mb-10">
+  <div>
+    <h2 className="text-3xl font-bold text-gray-900">All Products</h2>
+    <p className="text-gray-500 mt-1">
+      Browse high-quality products from trusted sellers
+    </p>
+  </div>
+
+  {user && (
+    <Link
+      to="/add-product"
+      className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-full hover:bg-blue-700 transition"
+    >
+      <span className="text-xl">+</span>
+      Add New Product
+    </Link>
+  )}
+</div>
+
 
         {/* Search Bar */}
-        <div className="mb-6">
-          <div className="flex items-center space-x-4">
-            <div className="relative max-w-md flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg
-                  className="h-5 w-5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <input
-                type="text"
-                placeholder="Search products by name or description..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-              />
-              {searchTerm && (
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                  >
-                    <svg
-                      className="h-5 w-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            {/* All Products Button */}
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition duration-200 whitespace-nowrap"
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                  />
-                </svg>
-                All Products
-              </button>
-            )}
-          </div>
-        </div>
+
 
         {/* Add Product Button */}
-        {user && (
+        {/* {user && (
           <div className="mb-6">
             <Link
               to="/add-product"
@@ -187,7 +157,7 @@ export default function ProductsPage() {
               Add New Product
             </Link>
           </div>
-        )}
+        )} */}
 
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (

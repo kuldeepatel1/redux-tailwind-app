@@ -12,7 +12,6 @@ export default function AddProductPage() {
     name: "",
     description: "",
     price: "",
-    stock: "",
     image: ""
   });
   const [imagePreview, setImagePreview] = useState("");
@@ -92,11 +91,6 @@ export default function AddProductPage() {
       newErrors.price = "Please enter a valid price";
     }
     
-    if (!formData.stock.trim()) {
-      newErrors.stock = "Stock quantity is required";
-    } else if (isNaN(formData.stock) || parseInt(formData.stock) < 0) {
-      newErrors.stock = "Please enter a valid stock quantity";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -116,7 +110,7 @@ export default function AddProductPage() {
         name: formData.name.trim(),
         description: formData.description.trim(),
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
+        
         image: formData.image || "https://via.placeholder.com/500x400?text=No+Image"
       };
 
@@ -137,208 +131,163 @@ export default function AddProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
+  <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 py-10">
+    <div className="w-full max-w-[520px] bg-white rounded-2xl border shadow-sm p-8">
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Link
-              to="/products"
-              className="flex items-center text-gray-600 hover:text-indigo-600 transition duration-200 mr-4"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </Link>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Add New Product
-            </h1>
-          </div>
-          <p className="text-gray-600">
-            Create a new product for your store
-          </p>
+      {/* Header */}
+      <div className="text-center mb-8 relative">
+        <Link
+          to="/products"
+          className="absolute left-0 top-1 p-2 rounded-full hover:bg-gray-100"
+        >
+          <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </Link>
+
+        <h1 className="text-2xl font-bold text-gray-900">
+          Add New Product
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Fill in the details below to add a new product to your store
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Product Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Product Name *
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Enter product name"
+            className={`w-full px-4 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 outline-none
+              ${errors.name ? "border-red-400" : "border-gray-300"}`}
+          />
+          {errors.name && (
+            <p className="text-xs text-red-500 mt-1">{errors.name}</p>
+          )}
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {errors.submit && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 text-sm">{errors.submit}</p>
-            </div>
+        {/* Product Details */}
+        <div className="bg-gray-50 rounded-xl p-4">
+          <p className="text-sm font-semibold text-gray-800 mb-2">
+            Product Details
+          </p>
+
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            rows={4}
+            placeholder="Enter product description"
+            className={`w-full px-4 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 outline-none
+              ${errors.description ? "border-red-400" : "border-gray-300"}`}
+          />
+          {errors.description && (
+            <p className="text-xs text-red-500 mt-1">{errors.description}</p>
           )}
+        </div>
 
-          {/* Product Name */}
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Product Name *
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ${
-                errors.name ? "border-red-300" : "border-gray-300"
-              }`}
-              placeholder="Enter product name"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-            )}
-          </div>
+        {/* Pricing */}
+        <div className="bg-gray-50 rounded-xl p-4 w-40">
+          <p className="text-sm font-semibold text-gray-800 mb-2">
+            Pricing
+          </p>
 
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-              Description *
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={4}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ${
-                errors.description ? "border-red-300" : "border-gray-300"
-              }`}
-              placeholder="Enter product description"
-            />
-            {errors.description && (
-              <p className="text-red-500 text-sm mt-1">{errors.description}</p>
-            )}
-          </div>
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            placeholder="0.00"
+            className={`w-full px-4 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500 outline-none
+              ${errors.price ? "border-red-400" : "border-gray-300"}`}
+          />
+          {errors.price && (
+            <p className="text-xs text-red-500 mt-1">{errors.price}</p>
+          )}
+        </div>
 
-          {/* Price and Stock Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Price */}
-            <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
-                Price (₹) *
-              </label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ${
-                  errors.price ? "border-red-300" : "border-gray-300"
-                }`}
-                placeholder="0.00"
-              />
-              {errors.price && (
-                <p className="text-red-500 text-sm mt-1">{errors.price}</p>
-              )}
-            </div>
+        {/* Image Upload */}
+        <div className="bg-gray-50 rounded-xl p-4">
+          <p className="text-sm font-semibold text-gray-800 mb-3">
+            Product Image
+          </p>
 
-            {/* Stock */}
-            <div>
-              <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-2">
-                Stock Quantity *
-              </label>
-              <input
-                type="number"
-                id="stock"
-                name="stock"
-                value={formData.stock}
-                onChange={handleChange}
-                min="0"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ${
-                  errors.stock ? "border-red-300" : "border-gray-300"
-                }`}
-                placeholder="0"
-              />
-              {errors.stock && (
-                <p className="text-red-500 text-sm mt-1">{errors.stock}</p>
-              )}
-            </div>
-          </div>
+          <label
+            htmlFor="image"
+            className={`h-32 flex flex-col items-center justify-center border-2 border-dashed rounded-xl cursor-pointer
+              ${errors.image ? "border-red-400 bg-red-50" : "border-gray-300 hover:bg-gray-100"}`}
+          >
+            <svg className="h-6 w-6 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M12 4v16m8-8H4" />
+            </svg>
+            <p className="text-xs text-gray-600">
+              Click to upload or drag & drop
+            </p>
+            <p className="text-[11px] text-gray-400 mt-1">
+              JPG / PNG • Max 5MB
+            </p>
 
-          {/* Image Upload */}
-          <div>
-            <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-              Product Image
-            </label>
             <input
               type="file"
               id="image"
               name="image"
-              accept="image/jpeg,image/jpg,image/png"
+              accept="image/jpeg,image/png"
               onChange={handleChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 ${
-                errors.image ? "border-red-300" : "border-gray-300"
-              }`}
+              className="hidden"
             />
-            <p className="text-gray-500 text-sm mt-1">
-              Select an image file (JPG, PNG). Max size: 5MB. Leave empty to use a default placeholder image.
-            </p>
-            {errors.image && (
-              <p className="text-red-500 text-sm mt-1">{errors.image}</p>
-            )}
-          </div>
+          </label>
 
-          {/* Image Preview */}
-          {formData.image && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Image Preview
-              </label>
-              <div className="w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
-                <img
-                  src={formData.image}
-                  alt="Product preview"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/500x400?text=No+Image";
-                  }}
-                />
-              </div>
-            </div>
+          {errors.image && (
+            <p className="text-xs text-red-500 mt-1">{errors.image}</p>
           )}
+        </div>
 
-          {/* Submit Button */}
-          <div className="flex gap-4 pt-6">
-            <button
-              type="button"
-              onClick={() => navigate("/products")}
-              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition duration-200"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Adding Product...
-                </div>
-              ) : (
-                "Add Product"
-              )}
-            </button>
+        {/* Image Preview */}
+        {formData.image && (
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">
+              Image Preview
+            </p>
+            <div className="h-40 bg-gray-100 rounded-xl flex items-center justify-center">
+              <img
+                src={formData.image}
+                alt="Preview"
+                className="max-h-[140px] max-w-[200px] object-contain"
+              />
+            </div>
           </div>
-        </form>
-      </div>
+        )}
+
+        {/* Buttons */}
+        <div className="flex gap-4 pt-6 border-t">
+          <button
+            type="button"
+            onClick={() => navigate("/products")}
+            className="flex-1 py-2.5 rounded-lg border text-sm hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {loading ? "Adding..." : "Add Product"}
+          </button>
+        </div>
+
+      </form>
     </div>
-  );
+  </div>
+);
 }
